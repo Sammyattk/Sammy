@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Teste Open-Meteo</title>
+<title>Teste Clima por Região - PR</title>
 <style>
 body {
   font-family: Arial;
   text-align: center;
   padding: 40px;
 }
-input, button {
+select, button {
   padding: 10px;
   margin: 5px;
 }
@@ -22,52 +22,68 @@ input, button {
 
 <body>
 
-<h1>🌦️ Teste Clima (Open-Meteo)</h1>
+<h1>🌱 Clima por Região do Paraná</h1>
 
-<input id="cidade" placeholder="Digite cidade do PR (ex: Curitiba)">
+<select id="regiao">
+  <option value="norte">Norte</option>
+  <option value="noroeste">Noroeste</option>
+  <option value="oeste">Oeste</option>
+  <option value="centroSul">Centro-Sul</option>
+  <option value="litoral">Litoral</option>
+</select>
+
 <br>
-<button onclick="buscarClima()">Buscar Clima</button>
+<button onclick="buscar()">Buscar Clima</button>
 
 <div id="resultado"></div>
 
 <script>
 
-// 🔥 coordenadas das cidades do Paraná
-const cidades = {
-  "curitiba": { lat: -25.42, lon: -49.27 },
-  "londrina": { lat: -23.31, lon: -51.16 },
-  "maringa": { lat: -23.42, lon: -51.93 },
-  "cascavel": { lat: -24.96, lon: -53.46 }
+// 🔥 coordenadas reais por região do Paraná
+const regioes = {
+  norte: { lat: -23.3, lon: -51.2 },
+  noroeste: { lat: -23.0, lon: -52.5 },
+  oeste: { lat: -24.9, lon: -53.5 },
+  centroSul: { lat: -25.5, lon: -51.5 },
+  litoral: { lat: -25.8, lon: -48.5 }
 };
 
-async function buscarClima() {
+// 🔥 traduz código climático
+function traduzClima(code) {
+  if (code === 0) return "Céu limpo";
+  if (code <= 3) return "Parcialmente nublado";
+  if (code <= 48) return "Nublado";
+  if (code <= 67) return "Chuva";
+  if (code <= 77) return "Neve";
+  if (code <= 99) return "Tempestade";
+  return "Desconhecido";
+}
 
-  const input = document.getElementById("cidade").value.toLowerCase();
+async function buscar() {
+
+  const regiao = document.getElementById("regiao").value;
   const resBox = document.getElementById("resultado");
 
-  if (!cidades[input]) {
-    resBox.innerHTML = "Cidade não cadastrada (use Curitiba, Londrina, Maringá ou Cascavel)";
-    return;
-  }
-
-  const { lat, lon } = cidades[input];
+  const { lat, lon } = regioes[regiao];
 
   resBox.innerHTML = "Carregando...";
 
   try {
+
     const res = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
     );
 
     const data = await res.json();
-    const clima = data.current_weather;
+    const c = data.current_weather;
 
     resBox.innerHTML = `
-      📍 Cidade: ${input} <br><br>
-      🌡️ Temperatura: ${clima.temperature}°C <br>
-      💨 Vento: ${clima.windspeed} km/h <br>
-      🧭 Direção do vento: ${clima.winddirection}° <br>
-      🕒 Horário: ${clima.time}
+      🌍 Região: ${regiao.toUpperCase()} <br><br>
+      🌡️ Temperatura: ${c.temperature}°C <br>
+      🌦️ Clima: ${traduzClima(c.weathercode)} <br>
+      💨 Vento: ${c.windspeed} km/h <br>
+      🧭 Direção: ${c.winddirection}° <br>
+      🕒 Hora: ${c.time}
     `;
 
   } catch (erro) {
