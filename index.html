@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Teste API Clima</title>
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  padding: 50px;
+}
+input, button {
+  padding: 10px;
+  margin: 5px;
+}
+#resultado {
+  margin-top: 20px;
+  font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Teste API HG Brasil</h1>
+
+<input id="cidade" placeholder="Digite a cidade (ex: Londrina)">
+<br>
+<button onclick="testar()">Testar API</button>
+
+<div id="resultado"></div>
+
+<script>
+async function testar() {
+
+  const cidade = document.getElementById("cidade").value;
+  const resultado = document.getElementById("resultado");
+
+  if (!cidade) {
+    resultado.innerHTML = "Digite uma cidade!";
+    return;
+  }
+
+  resultado.innerHTML = "Carregando...";
+
+  try {
+    const res = await fetch(`https://api.hgbrasil.com/weather?key=eaef0af3&city_name=${cidade},PR`);
+    const data = await res.json();
+
+    if (!data || !data.results) {
+      resultado.innerHTML = "Erro na resposta da API";
+      return;
+    }
+
+    const c = data.results;
+
+    resultado.innerHTML = `
+      🌦️ Clima: ${c.description} <br>
+      🌡️ Temperatura: ${c.temp}°C <br>
+      💧 Umidade: ${c.humidity}% <br>
+      🌅 Cidade: ${c.city}
+    `;
+
+  } catch (erro) {
+    resultado.innerHTML = "Erro ao conectar com a API";
+    console.error(erro);
+  }
+}
+</script>
+
+</body>
+</html>
