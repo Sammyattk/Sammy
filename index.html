@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Teste Clima por Região - PR</title>
+<title>Clima Paraná Final</title>
+
 <style>
 body {
   font-family: Arial;
@@ -22,13 +23,14 @@ select, button {
 
 <body>
 
-<h1>🌱 Clima por Região do Paraná</h1>
+<h1>🌱 Clima do Paraná por Região</h1>
 
 <select id="regiao">
   <option value="norte">Norte</option>
   <option value="noroeste">Noroeste</option>
   <option value="oeste">Oeste</option>
   <option value="centroSul">Centro-Sul</option>
+  <option value="sul">Sul</option>
   <option value="litoral">Litoral</option>
 </select>
 
@@ -39,22 +41,23 @@ select, button {
 
 <script>
 
-// 🔥 coordenadas reais por região do Paraná
+// 🔥 coordenadas ajustadas por região
 const regioes = {
   norte: { lat: -23.3, lon: -51.2 },
   noroeste: { lat: -23.0, lon: -52.5 },
   oeste: { lat: -24.9, lon: -53.5 },
   centroSul: { lat: -25.5, lon: -51.5 },
+  sul: { lat: -26.2, lon: -51.0 }, // 🔥 novo
   litoral: { lat: -25.8, lon: -48.5 }
 };
 
-// 🔥 traduz código climático
+// tradução do clima
 function traduzClima(code) {
   if (code === 0) return "Céu limpo";
   if (code <= 3) return "Parcialmente nublado";
   if (code <= 48) return "Nublado";
   if (code <= 67) return "Chuva";
-  if (code <= 77) return "Neve";
+  if (code <= 77) return "Geada/Frio intenso";
   if (code <= 99) return "Tempestade";
   return "Desconhecido";
 }
@@ -77,13 +80,35 @@ async function buscar() {
     const data = await res.json();
     const c = data.current_weather;
 
+    // 🔥 interpretação agrícola simples
+    let analise = "";
+
+    if (c.temperature > 30) {
+      analise += "🔥 Temperatura alta → risco de estresse hídrico<br>";
+    }
+
+    if (c.temperature < 10) {
+      analise += "❄️ Temperatura baixa → risco de geada<br>";
+    }
+
+    if (c.weathercode >= 51) {
+      analise += "🌧️ Indício de chuva → bom para sequeiro<br>";
+    }
+
+    if (c.windspeed > 25) {
+      analise += "💨 Vento forte → cuidado com plantas jovens<br>";
+    }
+
     resBox.innerHTML = `
       🌍 Região: ${regiao.toUpperCase()} <br><br>
+
       🌡️ Temperatura: ${c.temperature}°C <br>
       🌦️ Clima: ${traduzClima(c.weathercode)} <br>
       💨 Vento: ${c.windspeed} km/h <br>
-      🧭 Direção: ${c.winddirection}° <br>
-      🕒 Hora: ${c.time}
+      🕒 Hora: ${c.time} <br><br>
+
+      <b>🌱 Interpretação:</b><br>
+      ${analise || "Condições normais para produção"}
     `;
 
   } catch (erro) {
