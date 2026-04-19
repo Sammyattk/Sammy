@@ -2,68 +2,42 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Teste API Clima</title>
-<style>
-body {
-  font-family: Arial;
-  text-align: center;
-  padding: 50px;
-}
-input, button {
-  padding: 10px;
-  margin: 5px;
-}
-#resultado {
-  margin-top: 20px;
-  font-size: 18px;
-}
-</style>
+<title>Teste API HG</title>
 </head>
 
 <body>
 
-<h1>Teste API HG Brasil</h1>
+<h2>Teste API Clima</h2>
 
-<input id="cidade" placeholder="Digite a cidade (ex: Londrina)">
-<br>
-<button onclick="testar()">Testar API</button>
+<input id="cidade" placeholder="Ex: Curitiba">
+<button onclick="testar()">Testar</button>
 
-<div id="resultado"></div>
+<pre id="resposta"></pre>
 
 <script>
 async function testar() {
-
   const cidade = document.getElementById("cidade").value;
-  const resultado = document.getElementById("resultado");
+  const box = document.getElementById("resposta");
 
   if (!cidade) {
-    resultado.innerHTML = "Digite uma cidade!";
+    box.innerText = "Digite uma cidade";
     return;
   }
 
-  resultado.innerHTML = "Carregando...";
-
   try {
-    const res = await fetch(`https://api.hgbrasil.com/weather?key=eaef0af3&city_name=${cidade},PR`);
+    const url = new URL("https://api.hgbrasil.com/weather");
+
+    url.searchParams.set("key", "eaef0af3");
+    url.searchParams.set("city_name", cidade + ",PR");
+
+    const res = await fetch(url.href);
     const data = await res.json();
 
-    if (!data || !data.results) {
-      resultado.innerHTML = "Erro na resposta da API";
-      return;
-    }
-
-    const c = data.results;
-
-    resultado.innerHTML = `
-      🌦️ Clima: ${c.description} <br>
-      🌡️ Temperatura: ${c.temp}°C <br>
-      💧 Umidade: ${c.humidity}% <br>
-      🌅 Cidade: ${c.city}
-    `;
+    // 🔥 MOSTRA O JSON COMPLETO (SEM FILTRO)
+    box.innerText = JSON.stringify(data, null, 2);
 
   } catch (erro) {
-    resultado.innerHTML = "Erro ao conectar com a API";
-    console.error(erro);
+    box.innerText = "Erro: " + erro;
   }
 }
 </script>
