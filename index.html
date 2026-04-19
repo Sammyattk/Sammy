@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agro Paraná Inteligente</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --green:#1B5E20;
+  --accent:#4CAF50;
+  --bg:#f4f6f5;
+  --card:#ffffff;
+}
+
+body {
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background:var(--bg);
+  color:#222;
+}
+
+/* INTRO */
+#intro {
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:#111;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:999;
+  animation:fadeOut 1s ease forwards;
+  animation-delay:3s;
+}
+
+#intro h1 {
+  opacity:0;
+  animation:fadeText 1s ease forwards;
+}
+
+#intro h1:nth-child(1){animation-delay:0.5s;}
+#intro h1:nth-child(2){animation-delay:1s;}
+#intro h1:nth-child(3){animation-delay:1.5s;}
+#intro h1:nth-child(4){animation-delay:2s;}
+
+@keyframes fadeText {
+  to {opacity:1;}
+}
+
+@keyframes fadeOut {
+  to {opacity:0; visibility:hidden;}
+}
+
+/* HERO */
+.hero {
+  height:60vh;
+  background:linear-gradient(135deg,#1B5E20,#4CAF50);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  color:white;
+  text-align:center;
+}
+
+/* CONTAINER */
+.container {
+  max-width:1000px;
+  margin:auto;
+  padding:20px;
+}
+
+/* CARD */
+.card {
+  background:var(--card);
+  padding:20px;
+  border-radius:15px;
+  margin-top:20px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  animation:fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(20px);}
+  to {opacity:1; transform:translateY(0);}
+}
+
+/* INPUT */
+.input-group {
+  margin-top:10px;
+}
+
+.input-group label {
+  font-weight:600;
+}
+
+.input-wrapper {
+  display:flex;
+  background:#eee;
+  border-radius:10px;
+  padding:5px;
+}
+
+.input-wrapper input, select {
+  flex:1;
+  border:none;
+  background:none;
+  padding:10px;
+  outline:none;
+}
+
+/* BUTTON */
+button {
+  margin-top:15px;
+  padding:12px;
+  width:100%;
+  border:none;
+  border-radius:10px;
+  background:var(--green);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover {
+  transform:translateY(-2px);
+  background:#2e7d32;
+}
+
+/* GRID RESULT */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="intro">
+  <h1>Tecnologia no campo</h1>
+  <h1>Decisões inteligentes</h1>
+  <h1>Paraná em foco</h1>
+  <h1>Produção com equilíbrio</h1>
+</div>
+
+<div class="hero">
+  <h1>Agro Paraná Inteligente</h1>
+  <p>Análise agrícola com clima real</p>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<div class="input-group">
+<label>Cidade</label>
+<select id="cidade" onchange="atualizarClima()">
+<option>Londrina</option>
+<option>Maringá</option>
+<option>Cascavel</option>
+<option>Curitiba</option>
+</select>
+</div>
+
+<div class="input-group">
+<label>Região</label>
+<select id="regiao">
+<option>Norte</option>
+<option>Noroeste</option>
+<option>Oeste</option>
+<option>Centro-Sul</option>
+<option>Litoral</option>
+</select>
+</div>
+
+<div class="input-group">
+<label>Tipo de Produção</label>
+<select id="irrigacao">
+<option>Sequeiro</option>
+<option>Irrigado</option>
+</select>
+</div>
+
+<div class="input-group">
+<label>Área</label>
+<div class="input-wrapper">
+<input id="area" type="number" placeholder="Ex: 50">
+<span>ha</span>
+</div>
+</div>
+
+<div class="input-group">
+<label>Água</label>
+<div class="input-wrapper">
+<input id="agua" type="number" placeholder="Ex: 6000">
+<span>L/ha</span>
+</div>
+</div>
+
+<div class="input-group">
+<label>Fertilizante</label>
+<div class="input-wrapper">
+<input id="fert" type="number" placeholder="Ex: 150">
+<span>kg/ha</span>
+</div>
+</div>
+
+<button onclick="analisar()">Analisar</button>
+
+</div>
+
+<div id="clima" class="card"></div>
+
+<div id="resultado" class="card grid"></div>
+
+<div class="card">
+<h3>Solos do Paraná</h3>
+<p><b>Argiloso:</b> retém água e nutrientes → alta produtividade.</p>
+<p><b>Arenoso:</b> perde água rápido → precisa de mais cuidado.</p>
+<p><b>Terra Roxa:</b> solo extremamente fértil típico do Paraná.</p>
+</div>
+
+</div>
+
+<script>
+
+// API CLIMA
+async function pegarClima(cidade){
+  try{
+    const res = await fetch(`https://api.hgbrasil.com/weather?key=afe04172&city_name=${cidade},PR`);
+    const data = await res.json();
+    return data.results;
+  }catch{
+    return null;
+  }
+}
+
+async function atualizarClima(){
+  const cidade = document.getElementById("cidade").value;
+  const clima = await pegarClima(cidade);
+
+  if(!clima){
+    document.getElementById("clima").innerHTML = "Erro ao carregar clima";
+    return;
+  }
+
+  window.climaAtual = clima;
+
+  document.getElementById("clima").innerHTML = `
+  <b>Clima atual</b><br>
+  🌦️ ${clima.description}<br>
+  🌡️ ${clima.temp}°C<br>
+  💧 Umidade: ${clima.humidity}%
+  `;
+}
+
+function analisar(){
+
+let area = Number(area.value);
+let agua = Number(agua.value);
+let fert = Number(fert.value);
+let irrigacao = irrigacao.value;
+let regiao = regiao.value;
+let clima = window.climaAtual;
+
+let html = "";
+
+// CLIMA
+let climaTxt="";
+if(clima){
+  if(clima.humidity < 40 && irrigacao=="Sequeiro")
+    climaTxt += "Risco alto por baixa umidade";
+  if(clima.description.toLowerCase().includes("chuva"))
+    climaTxt += " | Chuva ajuda na produção";
+}
+
+// ÁGUA
+let aguaTxt="";
+if(irrigacao=="Irrigado"){
+  if(agua>7000) aguaTxt="Excesso de água";
+  else if(agua<4000) aguaTxt="Falta de água";
+  else aguaTxt="Uso ideal";
+}else{
+  aguaTxt="Depende da chuva";
+}
+
+// REGIÃO
+let regiaoTxt="";
+if(regiao=="Noroeste") regiaoTxt="Região mais seca";
+if(regiao=="Litoral") regiaoTxt="Alta umidade";
+
+// PRODUÇÃO
+let producao = area * 5;
+
+html += `
+<div class="card"><b>Clima</b><br>${climaTxt}</div>
+<div class="card"><b>Água</b><br>${aguaTxt}</div>
+<div class="card"><b>Região</b><br>${regiaoTxt}</div>
+<div class="card"><b>Produção</b><br>${producao} toneladas</div>
+`;
+
+document.getElementById("resultado").innerHTML = html;
+
+}
+
+atualizarClima();
+
+</script>
+
+</body>
+</html>
