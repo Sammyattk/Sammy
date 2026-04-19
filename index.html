@@ -2,44 +2,80 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Teste API HG</title>
+<title>Teste Open-Meteo</title>
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  padding: 40px;
+}
+input, button {
+  padding: 10px;
+  margin: 5px;
+}
+#resultado {
+  margin-top: 20px;
+  font-size: 18px;
+}
+</style>
 </head>
 
 <body>
 
-<h2>Teste API Clima</h2>
+<h1>🌦️ Teste Clima (Open-Meteo)</h1>
 
-<input id="cidade" placeholder="Ex: Curitiba">
-<button onclick="testar()">Testar</button>
+<input id="cidade" placeholder="Digite cidade do PR (ex: Curitiba)">
+<br>
+<button onclick="buscarClima()">Buscar Clima</button>
 
-<pre id="resposta"></pre>
+<div id="resultado"></div>
 
 <script>
-async function testar() {
-  const cidade = document.getElementById("cidade").value;
-  const box = document.getElementById("resposta");
 
-  if (!cidade) {
-    box.innerText = "Digite uma cidade";
+// 🔥 coordenadas das cidades do Paraná
+const cidades = {
+  "curitiba": { lat: -25.42, lon: -49.27 },
+  "londrina": { lat: -23.31, lon: -51.16 },
+  "maringa": { lat: -23.42, lon: -51.93 },
+  "cascavel": { lat: -24.96, lon: -53.46 }
+};
+
+async function buscarClima() {
+
+  const input = document.getElementById("cidade").value.toLowerCase();
+  const resBox = document.getElementById("resultado");
+
+  if (!cidades[input]) {
+    resBox.innerHTML = "Cidade não cadastrada (use Curitiba, Londrina, Maringá ou Cascavel)";
     return;
   }
 
+  const { lat, lon } = cidades[input];
+
+  resBox.innerHTML = "Carregando...";
+
   try {
-    const url = new URL("https://api.hgbrasil.com/weather");
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+    );
 
-    url.searchParams.set("key", "a024a127");
-    url.searchParams.set("city_name", cidade + ",PR");
-
-    const res = await fetch(url.href);
     const data = await res.json();
+    const clima = data.current_weather;
 
-    // 🔥 MOSTRA O JSON COMPLETO (SEM FILTRO)
-    box.innerText = JSON.stringify(data, null, 2);
+    resBox.innerHTML = `
+      📍 Cidade: ${input} <br><br>
+      🌡️ Temperatura: ${clima.temperature}°C <br>
+      💨 Vento: ${clima.windspeed} km/h <br>
+      🧭 Direção do vento: ${clima.winddirection}° <br>
+      🕒 Horário: ${clima.time}
+    `;
 
   } catch (erro) {
-    box.innerText = "Erro: " + erro;
+    resBox.innerHTML = "Erro ao buscar clima";
+    console.error(erro);
   }
 }
+
 </script>
 
 </body>
