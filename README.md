@@ -212,22 +212,6 @@ O projeto incentiva:
 
 ---
 
-## 📸 Demonstração
-
-### Tela Inicial
-
-<img src="imgs/home.png">
-
-### Dashboard
-
-<img src="imgs/dashboard.png">
-
-### Diagnóstico Integrado
-
-<img src="imgs/diagnostico.png">
-
----
-
 ## 👨‍💻 Desenvolvedor
 
 Projeto desenvolvido para o **Concurso Agrinho 2026**.
